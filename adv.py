@@ -5,6 +5,19 @@ from world import World
 import random
 from ast import literal_eval
 
+class Stack():
+    def __init__(self):
+        self.stack = []
+    def push(self, value):
+        self.stack.append(value)
+    def pop(self):
+        if self.size() > 0:
+            return self.stack.pop()
+        else:
+            return None
+    def size(self):
+        return len(self.stack)
+
 # Load world
 world = World()
 
@@ -29,12 +42,46 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
-
+def the_way(dir):
+    if dir == "n":
+        return "s"
+    elif dir == "s":
+        return "n"
+    elif dir == "e":
+        return "w"
+    elif dir == "w":
+        return "e"
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
 player.current_room = world.starting_room
-visited_rooms.add(player.current_room)
+moves = Stack()
+
+while len(visited_rooms) < len(world.rooms):
+    exits = player.current_room.get_exits()
+    dirs = []
+    # checks all exits in a room
+    # if the room in the direction of the exit has not been visited, append to dirs
+    for exit in exits:
+        if exit is not None and player.current_room.get_room_in_direction(exit) not in visited_rooms:
+            dirs.append(exit)
+    # add room visited set
+    visited_rooms.add(player.current_room)
+    # if there are directions to move in, pick a random one available
+    # push that dir onto moves stack
+    # move the player in that direction
+    # append move to travarseral path
+    if len(dirs) > 0:
+        rand_dir = random.randint(0, len(dirs) -1)
+        moves.push(dirs[rand_dir])
+        player.travel(dirs[rand_dir])
+        traversal_path.append(dirs[rand_dir])
+    # if there are no directions to move in, get the last move made
+    # move the player in the reveres direction of last move, append move to traversal path
+    else:
+        last_move = moves.pop()
+        player.travel(the_way(last_move))
+        traversal_path.append(the_way(last_move))
 
 for move in traversal_path:
     player.travel(move)
@@ -51,12 +98,12 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
